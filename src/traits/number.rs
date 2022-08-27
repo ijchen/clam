@@ -72,3 +72,45 @@ macro_rules! impl_number {
 }
 
 impl_number!(f32, f64, u8, i8, u16, i16, u32, i32, u64, i64);
+
+// Bools are not traditionally a numeric type, but can be treated
+// as such if definitions are made. Here, we've defined false is 0,
+// true is 1, and any other number does not map to bools or vice
+// versa.
+// TODO: Number cannot be implemented as-is on bool because of the
+// orphan rule. Three trait bounds on Number are unimplemented
+// for bool and come from external crate (Num, NumCast, and Sum).
+// If it is necessary to get around this, I would suggest creating
+// new traits local to this crate that are identical to the three
+// external traits (Num, NumCast, and Sum) and using those as trait
+// bounds on Number. This would allow us to implement Number for bool,
+// since we could implement those custom traits on bool as well. The
+// custom traits could have auto trait implementations for types that
+// implement the original traits so we'd only have to actually manually
+// implement it for bools.
+impl Number for bool {
+    fn num_bytes() -> u8 {
+        1
+    }
+
+    fn to_bytes(&self) -> Vec<u8> {
+        vec![match self { false => 0, true => 1 }]
+    }
+
+    fn from_bytes(bytes: &[u8]) -> bool {
+        assert!(bytes.len() == 1);
+
+        match bytes[0] {
+            0 => false,
+            1 => true,
+            val => panic!("Cannot convert non-[0, 1] u8 into bool (attempted to convert {val} to bool)")
+        }
+    }
+
+    fn as_f64(&self) -> f64 {
+        match self {
+            true => 1.0,
+            false => 0.0,
+        }
+    }
+}
