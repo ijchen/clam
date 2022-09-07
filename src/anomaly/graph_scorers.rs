@@ -300,6 +300,34 @@ impl<'a, T: Number, U: Number> GraphScorer<'a, T, U> for StationaryProbabilities
 
     #[allow(unused_variables)]
     fn score_graph(&self, graph: &'a Graph<T, U>) -> ClusterScores<'a, T, U> {
-        todo!()
+        // TODO Write this with iterators to match the style of the rest of the score_graph functions
+        let mut scores = ClusterScores::new();
+
+        for component in graph.find_component_clusters() {
+            if component.len() > 1 {
+                let clusters: Vec<_> = component.iter().collect(); // TODO Is order important here?
+                let matrix = todo!(); // component.distance_matrix() TODO graph.py line 243 (similar to graph.rs line 274)
+
+                //     # TODO: Figure out how to go until convergence.
+                //     sums = numpy.sum(matrix, axis=1)[:, None] + constants.EPSILON
+                //     matrix = matrix / sums
+                //     for _ in range(self.steps):
+                //         matrix = numpy.linalg.matrix_power(matrix, 2)
+                //
+                //     scores.update({c: s for c, s in zip(clusters, numpy.sum(matrix, axis=0))})
+            }
+
+            else {
+                // If a component only has one cluster, that cluster is anomalous
+                let cluster = component.iter().next().unwrap();
+                *scores.get_mut(cluster).unwrap() = 0.0;
+            }
+        }
+
+        // TODO why are we inverting them all at the end instead of just using -s
+        // in the first place?
+        // scores = {c: -s for c, s in scores.items()}
+
+        scores
     }
 }
