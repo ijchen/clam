@@ -579,7 +579,9 @@ impl<'a, T: Number, U: Number> KnnSieve<'a, T, U> {
 
         while !self.straddlers.is_empty() {
             let candidate = self.straddlers.pop().unwrap().c;
-            let indices = candidate.indices();
+            // TODO now that we have an iterator, we might be able to do better
+            // than using a Vec here
+            let indices = candidate.indices().collect::<Vec<_>>();
             let distances = self.space.query_to_many(self.query, &indices);
             pq.extend(
                 indices

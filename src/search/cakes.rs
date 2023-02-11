@@ -135,7 +135,9 @@ impl<'a, T: Number, U: Number> CAKES<'a, T, U> {
 
     pub fn knn_search(&'a self, query: &'a [T], k: usize) -> Vec<usize> {
         if k > self.root.cardinality() {
-            self.root.indices()
+            self.root.indices().collect() // TODO now that we have an iterator,
+                                          // we might be able to do better than
+                                          // using a Vec here
         } else {
             let mut sieve = super::KnnSieve::new(self.root.children().to_vec(), query, k);
             let mut counter = 0;
@@ -195,7 +197,9 @@ impl<'a, T: Number, U: Number> CAKES<'a, T, U> {
     }
 
     pub fn linear_search(&self, query: &[T], radius: U, indices: Option<Vec<usize>>) -> Vec<(usize, U)> {
-        let indices = indices.unwrap_or_else(|| self.root.indices());
+        // TODO now that we have an iterator, we might be able to do better than
+        // using a Vec here
+        let indices = indices.unwrap_or_else(|| self.root.indices().collect());
         let distances = self.space.query_to_many(query, &indices);
         indices
             .into_iter()

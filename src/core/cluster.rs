@@ -10,6 +10,8 @@ use bitvec::prelude::*;
 
 use crate::prelude::*;
 use crate::utils::helpers;
+
+use super::iter::Indices;
 // use crate::utils::reports;
 
 const SUB_SAMPLE_LIMIT: usize = 100;
@@ -439,15 +441,15 @@ impl<'a, T: Number, U: Number> Cluster<'a, T, U> {
     /// Indices are only stored at leaf `Cluster`s. Calling this method on a
     /// non-leaf `Cluster` will have to perform a tree traversal, returning the
     /// indices in depth-first order.
-    pub fn indices(&self) -> Vec<usize> {
+    pub fn indices(&self) -> Indices {
         match &self.indices {
-            Some(indices) => indices.clone(),
-            None => self
-                .left_child()
-                .indices()
-                .into_iter()
-                .chain(self.right_child().indices().into_iter())
-                .collect(),
+            Some(indices) => Indices::SliceCopied(indices.iter().copied()),
+            None => Indices::Chain(Box::new(
+                self.left_child()
+                    .indices()
+                    .into_iter()
+                    .chain(self.right_child().indices().into_iter()),
+            )),
         }
     }
 
